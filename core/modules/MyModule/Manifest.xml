@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+	<namespace>Vendor\App</namespace>
+	<name>myModule</name>
+	
+	<template>
+		<engine extension="phtml">php</engine>
+		<engine extension="volt">volt</engine>
+	</template>
+	
+	<routing>
+		<route controller="1">:controller</route>
+		<route action="1">mymodule/:action</route>
+	</routing>
+	
+	<permissions>
+		<group>Service::GROUP_BASE</group>
+		<permission>Service::VOLT</permission>
+		<permission>Service::FLASH</permission>
+	</permissions>
+	
+</Module>

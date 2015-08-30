@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+	<namespace>Awesome\App</namespace>
+	<name>awesome</name>
+	
+	<routing>
+		<route>awesome</route>
+	</routing>
+	
+	<permissions>
+		<group>Service::GROUP_BASE</group>
+
+		<permission>Service::VOLT</permission>
+
+	</permissions>
+</Module>

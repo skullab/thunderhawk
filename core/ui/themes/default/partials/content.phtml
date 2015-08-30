@@ -1,0 +1,6 @@
+<h1>Theme content</h1>
+<div><?php echo $this->assets->getPathLib('jquery/jquery.js')?></div>
+<?php echo $this->url->getBaseUri();?>
+<?php echo $this->tag->appendTitle('ciao');?>
+<?php echo $this->tag->imageInput(array('src' => $this->assets->getPathStandard('img/logo.png')));?>
+<?php echo $this->getContent() ;?>

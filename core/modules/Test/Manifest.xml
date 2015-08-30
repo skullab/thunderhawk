@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+	<namespace>Thunderhawk\Modules\Test</namespace>
+	<name>defaultModule</name>
+	
+	<info>
+		<author>Mr. Thunder</author>
+		<description>
+			<long>
+				This is a looooooong description of this module
+				with many many many lines...
+				and lines...
+				lines...
+			</long>
+			<short>shortly...</short>
+		</description>
+	</info>
+	
+	<version>
+		<release>0</release>
+		<major>0</major>
+		<minor>1</minor>
+	</version>
+	
+	<template>
+		<engine extension="phtml">php</engine>
+		<engine extension="volt">volt</engine>
+	</template>
+	
+	<routing>
+		<route name="defaultModule:index" http-methods="GET"></route>
+		<route controller="1">:controller</route>
+		<route name="defaultModule:users" http-methods="GET,POST" action="users">
+			users/{method}
+		</route>
+		<!-- <route>admin</route> -->
+	</routing>
+	
+	<required>
+		<require module="test" namespace="Vendor\App" version="1.0" />
+		<require plugin="security" namespace="Thunderhawk\Plugins" version="1.*" />
+	</required>
+	
+	<permissions>
+		<group>Service::GROUP_BASE</group>
+		<permission>Service::VOLT</permission>
+		<permission>Service::FLASH</permission>
+		<permission>Service::DB</permission>
+	</permissions>
+	
+</Module>
