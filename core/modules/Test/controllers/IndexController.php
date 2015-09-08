@@ -21,12 +21,16 @@ class IndexController extends Controller {
 			
 	public function indexAction() {
 		
-		$this->assets->requireJQueryUI();
-		$this->assets->requireJQuery();
-		$this->assets->requireCustomCss('jtable/2.4.0/themes/metro/blue/jtable.min.css',true,false);
+		$this->assets->requireJqueryui();
+		$this->assets->requireJquery();
+		
+		/*$this->assets->requireCustomCss('jtable/2.4.0/themes/metro/blue/jtable.min.css',true,false);
 		$this->assets->requireCustomJs('jtable/2.4.0/jquery.jtable.js',true,false);
-		$this->assets->requireCustomJs('jtable/2.4.0/localization/jquery.jtable.it.js',true,false);
-		$this->assets->requireJs('js/test.js');
+		$this->assets->requireCustomJs('jtable/2.4.0/localization/jquery.jtable.it.js',true,false);*/
+		$this->assets->requireModuleJs('js/test.js');
+		
+		$this->assets->requireSemantic();
+		$this->assets->requireAngular();
 		
 	}
 		

@@ -129,7 +129,7 @@ abstract class Module implements ModuleDefinitionInterface {
 		$di->set('assets',function() use($baseDir){
 			$dirs = Engine::getInstance()->getConfigDirs() ;
 			$assets = new AssetsManager([
-					'baseUri'	=> $dirs['assets']->modules.$baseDir.'/'
+					'moduleUri'	=> $dirs['assets']->modules.$baseDir.'/'
 			]);
 			return $assets ;
 		});

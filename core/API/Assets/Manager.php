@@ -7,60 +7,157 @@ use Thunderhawk\API\Service;
 class Manager extends \Phalcon\Assets\Manager{
 	
 	private $siteBaseUri = ''; // like url base uri
-	private $baseUri = '' ; // base uri for module
+	private $moduleUri = '' ; // module uri
+	
+	private $dirs ;
 	
 	private $assetsUri = '';
 	private $standardUri = '' ;
 	private $themesUri	= '';
 	private $libUri	= '';
-	private $jqueryUri = '' ;
-	private $jqueryuiUri = '' ;
 	
 	private $stackCss = array();
 	private $stackJs = array();
 	private $stackStandardCss = array();
  	private $stackStandardJs = array();
- 	private $stackJQuery = array();
- 	private $stackJQueryUi = array();
- 	
  	private $stackCustomJs = array();
  	private $stackCustomCss = array();
  	
+ 	private $loadedLibraries = array();
+ 	
+ 	private $customLibraries = array(
+ 			'jquery'	=> array(
+ 					'collection'	=> 'jquery', 
+ 					'resources'		=> array(
+ 							'js'	=> array(
+ 									'path' 		=> 'jquery/jquery.js',
+ 									'local'		=> true,
+ 									'filter'	=> true,
+ 									'attributes'=> null
+ 							)
+ 					),
+ 					
+ 			),
+ 			'jqueryui'	=> array(
+ 					'collection'	=> 'jqueryui',
+ 					'resources'		=> array(
+ 							'js'	=> array(
+ 									'path'		=> 'jqueryui/default/jquery-ui.min.js',
+ 									'local'		=> true,
+ 									'filter'	=> false,
+ 									'attributes'=> null
+ 							),
+ 							'css'	=> array(
+ 									'path'		=> 'jqueryui/default/jquery-ui.min.css',
+ 									'local'		=> true,
+ 									'filter'	=> false,
+ 									'attributes'=> null
+ 							)
+ 					),
+ 					
+ 			),
+ 			'angular'	=> array(
+ 					'collection'	=> 'angular',
+ 					'resources'		=> array(
+ 							'js'	=> array(
+ 									'path' 		=> 'angular/angular.min.js',
+ 									'local'		=> true,
+ 									'filter'	=> false,
+ 									'attributes'=> null
+ 							)
+ 					)
+ 			),
+ 			'semantic'	=> array(
+ 					'collection'	=> 'semantic',
+ 					'resources'		=> array(
+ 							'js'	=> array(
+ 									'path' 		=> 'semantic/dist/semantic.min.js',
+ 									'local'		=> true,
+ 									'filter'	=> false,
+ 									'attributes'=> null
+ 							),
+ 							'css'	=> array(
+ 									'path' 		=> 'semantic/dist/semantic.min.css',
+ 									'local'		=> true,
+ 									'filter'	=> false,
+ 									'attributes'=> null
+ 							)
+ 					)
+ 			)
+ 	);
+ 	
+ 	private $customMethods = array();
+ 	
+ 	private $customRequireFunction , $customOutputFunction ;
+ 	
 	public function __construct($options = null){
 		parent::__construct($options);
-		if(array_key_exists('baseUri', $this->getOptions())){
-			$this->baseUri = $this->getOptions()['baseUri'];
+		if(array_key_exists('moduleUri', $this->getOptions())){
+			$this->moduleUri = $this->getOptions()['moduleUri'];
 		}
 		
-		$this->siteBaseUri = Service::get(Service::URL)->getBaseUri();
+		$this->dirs = Engine::getInstance()->getConfigDirs();
 		$dirs = Engine::getInstance()->getConfigDirs();
+		
+		$this->customRequireFunction = function($name){
+			if(!array_key_exists($name,$this->loadedLibraries)){
+				$this->loadedLibraries[$name] = $this->customLibraries[$name] ;
+				$collectionBase = $this->loadedLibraries[$name]['collection'] ;
+				foreach ($this->loadedLibraries[$name]['resources'] as $type => $resource){
+					$calledFunction = 'add'.ucfirst($type);
+					$path = $this->dirs['assets']->lib . $resource['path'] ;
+					$this->collection($collectionBase.'-'.$type)->$calledFunction($path,$resource['local'],$resource['filter'],$resource['attributes']);
+				}
+			}
+		};
+		
+		$this->customOutputFunction = function($name){
+			foreach ($this->loadedLibraries[$name]['resources'] as $type => $resource){
+				$collection = $this->loadedLibraries[$name]['collection'] . '-' . $type ;
+				$calledFunction = 'output'.ucfirst($type) ;
+				$this->$calledFunction($collection);
+			}
+		};
+		
+		$this->initializeCustomMethods();
+		
+		$this->siteBaseUri = Service::get(Service::URL)->getBaseUri();
+		
 		$this->assetsUri = $dirs['public']->assets ;
 		$this->standardUri = $dirs['assets']->standard ;
 		$this->themesUri = $dirs['assets']->themes ;
 		$this->libUri = $dirs['assets']->lib ;
-		$this->jqueryUri = $dirs['lib']->jquery ;
-		$this->jqueryuiUri = $dirs['lib']->jqueryui ;
-		
-		$this->collection('jquery');
-		$this->collection('jqueryui');
-		$this->collection('jqueryuijs');
 		
 		$this->collection('customjs');
 		$this->collection('customcss');
 	}
 	
+	private function initializeCustomMethods(){
+		foreach ($this->customLibraries as $name => $library){
+			$this->customMethods['require'.ucfirst($name)] = \Closure::bind($this->customRequireFunction, $this,get_class());
+			$this->customMethods['output'.ucfirst($name)] = \Closure::bind($this->customOutputFunction,$this,get_class());
+		}
+	}
+	function __call($method,$args){
+		if(is_callable($this->customMethods[$method])){
+			$name = strpos($method,'require') !== false ? strtolower(str_replace('require', '', $method)) : strtolower(str_replace('output', '', $method)) ;
+			return call_user_func_array($this->customMethods[$method], array($name));
+		}
+	}
+	/*************************************************************************/
+	// PUBLIC JS/CSS
+	/*************************************************************************/
+	
 	public function addCss ($path, $local = true, $filter = true, $attributes = null){
-		$path = $this->baseUri . $path ;
 		$this->stackCss[$path] = array(
 				'local'			=> $local,
 				'filter'		=> $filter,
-				'attributes'	=>$attributes
+				'attributes'	=> $attributes
 		);
 		parent::addCss($path,$local,$filter,$attributes);
 	}
 	
 	public function addJs ($path, $local = true, $filter = true, $attributes = null){
-		$path = $this->baseUri . $path ;
 		$this->stackJs[$path] = array(
 				'local'			=> $local,
 				'filter'		=> $filter,
@@ -69,6 +166,54 @@ class Manager extends \Phalcon\Assets\Manager{
 		parent::addJs($path,$local,$filter,$attributes);
 	}
 	
+	public function requireCss($path, $local = true, $filter = true, $attributes = null){
+		if(!array_key_exists($path, $this->stackCss)){
+			$this->stackCss[$path] = array(
+					'local'			=> $local,
+					'filter'		=> $filter,
+					'attributes'	=>$attributes
+			);
+			parent::addCss($path,$local,$filter,$attributes);
+		}
+	}
+	
+	public function requireJs($path, $local = true, $filter = true, $attributes = null){
+		if(!array_key_exists($path, $this->stackJs)){
+			$this->stackJs[$path] = array(
+					'local'			=> $local,
+					'filter'		=> $filter,
+					'attributes'	=>$attributes
+			);
+			parent::addJs($path,$local,$filter,$attributes);
+		}
+	}
+	
+	/*************************************************************************/
+	// MODULE DIRECTORY
+	/*************************************************************************/
+	public function addModuleCss ($path, $local = true, $filter = true, $attributes = null){
+		$path = $this->moduleUri . $path ;
+		$this->addCss($path,$local,$filter,$attributes);
+	}
+	
+	public function addModuleJs ($path, $local = true, $filter = true, $attributes = null){
+		$path = $this->moduleUri . $path ;
+		$this->addJs($path,$local,$filter,$attributes);
+	}
+	
+	public function requireModuleCss($path, $local = true, $filter = true, $attributes = null){
+		$path = $this->moduleUri . $path ;
+		$this->requireCss($path,$local,$filter,$attributes);
+	}
+	
+	public function requireModuleJs($path, $local = true, $filter = true, $attributes = null){
+		$path = $this->moduleUri . $path ;
+		$this->requireJs($path,$local,$filter,$attributes);
+	}
+	
+	/*************************************************************************/
+	// STANDARD DIRECTORY	
+	/*************************************************************************/
 	public function addStandardCss ($path, $local = true, $filter = true, $attributes = null){
 		$path = $this->standardUri . $path ;
 		$this->stackStandardCss[$path] = array(
@@ -87,30 +232,6 @@ class Manager extends \Phalcon\Assets\Manager{
 				'attributes'	=>$attributes
 		);
 		parent::addJs($path,$local,$filter,$attributes);
-	}
-	
-	public function requireCss($path, $local = true, $filter = true, $attributes = null){
-		$path = $this->baseUri . $path ;
-		if(!array_key_exists($path, $this->stackCss)){
-			$this->stackCss[$path] = array(
-					'local'			=> $local,
-					'filter'		=> $filter,
-					'attributes'	=>$attributes
-			);
-			parent::addCss($path,$local,$filter,$attributes);
-		}
-	}
-	
-	public function requireJs($path, $local = true, $filter = true, $attributes = null){
-		$path = $this->baseUri . $path ;
-		if(!array_key_exists($path, $this->stackJs)){
-			$this->stackJs[$path] = array(
-					'local'			=> $local,
-					'filter'		=> $filter,
-					'attributes'	=>$attributes
-			);
-			parent::addJs($path,$local,$filter,$attributes);
-		}
 	}
 	
 	public function requireStandardCss($path, $local = true, $filter = true, $attributes = null){
@@ -137,31 +258,9 @@ class Manager extends \Phalcon\Assets\Manager{
 		}
 	}
 	
-	public function requireCustomJs($path, $local = true, $filter = true, $attributes = null){
-		$path = $this->getPathLib($path) ;
-		if(!array_key_exists($path, $this->stackCustomJs)){
-			$this->stackCustomJs[$path] = array(
-					'resource'	=> basename($path),
-					'local'		=> $local,
-					'filter'	=> $filter,
-					'attributes'=> $attributes
-			);
-			$this->collection('customjs')->addJs($path, $local, $filter, $attributes);
-		}
-	}
-	
-	public function requireCustomCss($path, $local = true, $filter = true, $attributes = null){
-		$path = $this->getPathLib($path) ;
-		if(!array_key_exists($path, $this->stackCustomCss)){
-			$this->stackCustomCss[$path] = array(
-					'resource'	=> basename($path),
-					'local'		=> $local,
-					'filter'	=> $filter,
-					'attributes'=> $attributes
-			);
-			$this->collection('customcss')->addCss($path, $local, $filter, $attributes);
-		}
-	}
+	/*************************************************************************/
+	// PATHS
+	/*************************************************************************/
 	
 	public function getPath($directory){
 		return $this->siteBaseUri.$this->assetsUri.$directory.'/' ;
@@ -196,7 +295,35 @@ class Manager extends \Phalcon\Assets\Manager{
 		}
 		return $this->getPath('uploads').$dir.'/'.$resource ;
 	}
+	
 	/*************************************************************************/
+	// CUSTOM JS / CSS - LIB DIRECTORY
+	/*************************************************************************/
+	public function requireCustomJs($path, $local = true, $filter = true, $attributes = null){
+		$path = $this->getPathLib($path) ;
+		if(!array_key_exists($path, $this->stackCustomJs)){
+			$this->stackCustomJs[$path] = array(
+					'resource'	=> basename($path),
+					'local'		=> $local,
+					'filter'	=> $filter,
+					'attributes'=> $attributes
+			);
+			$this->collection('customjs')->addJs($path, $local, $filter, $attributes);
+		}
+	}
+	
+	public function requireCustomCss($path, $local = true, $filter = true, $attributes = null){
+		$path = $this->getPathLib($path) ;
+		if(!array_key_exists($path, $this->stackCustomCss)){
+			$this->stackCustomCss[$path] = array(
+					'resource'	=> basename($path),
+					'local'		=> $local,
+					'filter'	=> $filter,
+					'attributes'=> $attributes
+			);
+			$this->collection('customcss')->addCss($path, $local, $filter, $attributes);
+		}
+	}
 	
 	public function outputCustomJs(){
 		$collection = 'customjs' ;
@@ -209,19 +336,9 @@ class Manager extends \Phalcon\Assets\Manager{
 	}
 	
 	/*************************************************************************/
-	public function outputJQuery($version = false){
-		$collection = $version === false ? 'jquery' : 'jquery-'.$version ;
-		return $this->outputJs($collection);
-	}
-	
-	public function outputJQueryUI($version = false){
-		$collection = $version === false ? 'jqueryui' : 'jqueryui-'.$version ;
-		$collectionjs = $version === false ? 'jqueryuijs' : 'jqueryuijs-'.$version ;
-		
-		$this->outputCss($collection);
-		$this->outputJs($collectionjs);
-	}
-	
+	// JQUERY / JQUERYUI
+	/*************************************************************************/
+	/*
 	public function requireJQuery($version = 'default',$cdn = false){
 		
 		$path =  $this->jqueryUri ;
@@ -260,13 +377,47 @@ class Manager extends \Phalcon\Assets\Manager{
 					'min'		=> $min,
 					'js'		=> basename($pathjs)
 			);
+			$this->collection('jqueryui')->addCss($path,true,$filter,null);
+			$this->collection('jqueryui-'.$version)->addCss($path,true,$filter,null);
+			
+			$this->collection('jqueryuijs')->addJs($pathjs,true,$filter,null);
+			$this->collection('jqueryuijs-'.$version)->addJs($pathjs,true,$filter,null);
 		}
-		
-		$this->collection('jqueryui')->addCss($path,true,$filter,null);
-		$this->collection('jqueryui-'.$version)->addCss($path,true,$filter,null);
-		
-		$this->collection('jqueryuijs')->addJs($pathjs,true,$filter,null);
-		$this->collection('jqueryuijs-'.$version)->addJs($pathjs,true,$filter,null);
-		
 	}
+	
+	public function outputJQuery($version = false){
+		$collection = $version === false ? 'jquery' : 'jquery-'.$version ;
+		return $this->outputJs($collection);
+	}
+	
+	public function outputJQueryUI($version = false){
+		$collection = $version === false ? 'jqueryui' : 'jqueryui-'.$version ;
+		$collectionjs = $version === false ? 'jqueryuijs' : 'jqueryuijs-'.$version ;
+	
+		$this->outputCss($collection);
+		$this->outputJs($collectionjs);
+	}
+*/
+	/*************************************************************************/
+	// SEMANTIC-UI
+	/*************************************************************************/
+	/*
+	public function requireSemanticUI(){
+		$pathJs = $this->semanticUri . 'semantic.min.js' ;
+		$path = $this->semanticUri . 'semantic.min.css' ;
+		if(!array_key_exists($path, $this->stackSemanticUi)){
+			$this->stackSemanticUi[$path] = array(
+					'version'	=> '2.1'
+			);
+			$this->collection('semantic-ui-css')->addCss($path,true,false,null);
+			$this->collection('semantic-ui-js')->addJs($pathJs,true,false,null);
+		}
+	}
+	
+	public function outputSemanticUI(){
+		$collectionCss = 'semantic-ui-css' ;
+		$collectionJs = 'semantic-ui-js' ;
+		$this->outputCss($collectionCss);
+		$this->outputJs($collectionJs);
+	}*/
 }

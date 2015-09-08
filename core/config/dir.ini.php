@@ -37,4 +37,5 @@ lib			= public/assets/lib/
 
 jquery		= public/assets/lib/jquery/
 jqueryui	= public/assets/lib/jqueryui/
+semantic	= public/assets/lib/semantic/dist/
 

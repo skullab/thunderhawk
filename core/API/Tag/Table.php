@@ -13,6 +13,8 @@ class Table extends Tag{
 	 */
 	static public function generate(Resultset $resultset){
 		$code = '<table>' ;
+		$code .= '<thead></thead>' ;
+		$code .= '<tbody>' ;
 		foreach ($resultset as $record){
 			$code .= '<tr>' ;
 			foreach ($record->toArray() as $value){
@@ -20,6 +22,8 @@ class Table extends Tag{
 			}
 			$code .= '</tr>' ;
 		}
+		$code .= '</tbody>' ;
+		$code .= '<tfoot></tfoot>' ;
 		$code .= '</table>';
 		
 		return $code ;

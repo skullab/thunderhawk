@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	$('#PersonTableContainer').jtable({
+	/*$('#PersonTableContainer').jtable({
 		title : 'Users',
 		paging: true,
         sorting: true,
@@ -39,6 +39,15 @@ $(document).ready(function() {
          });
      });
 
-	$('#PersonTableContainer').jtable('load');
+	$('#PersonTableContainer').jtable('load');*/
+	
+	$('#mytable .checkbox').checkbox({
+		onChecked:function(){
+			$('#' + $(this).attr('reference')).addClass('active');
+		},
+		onUnchecked:function(){
+		$('#' + $(this).attr('reference')).removeClass('active');
+		}
+	});
 });
 
