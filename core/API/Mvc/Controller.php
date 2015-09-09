@@ -14,10 +14,25 @@ abstract class Controller extends \Phalcon\Mvc\Controller {
 		$this->tag->setTitleSeparator(' - ');
 		$this->tag->setTitle('thunderhawk');
 		$this->onInitialize();
-		
 	}
 	
-	protected function onInitialize(){}
+	protected function onInitialize(){
+		$this->assets->requireJquery();
+		$this->assets->requireAngular();
+		$this->assets->requireSemantic();
+		
+		$src = TH_BASE_DIR . '/' .$this->assets->getPathTheme('css/');
+		$list = fileList($src);
+		foreach ($list as $file){
+			$this->assets->requireCss($this->assets->getPathTheme('css/'.$file));
+		}
+		
+		$src = TH_BASE_DIR . '/' .$this->assets->getPathTheme('js/');
+		$list = fileList($src);
+		foreach ($list as $file){
+			$this->assets->requireJs($this->assets->getPathTheme('js/'.$file));
+		}
+	}
 	
 	protected function getModule(){
 		return $this->moduleInstance ;

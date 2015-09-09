@@ -12,12 +12,15 @@ use Thunderhawk\API\Manifest;
 use Thunderhawk\API\Engine\Constants;
 use Thunderhawk\API\Engine\Exception;
 use Thunderhawk\API\Debug\Log;
+use Thunderhawk\API\Template\Hook;
 
 require_once 'Tokenizer.php';
 require_once 'Autoloader.php';
 require_once 'Engine/Functions.php';
 
 final class Engine extends Application implements Throwable {
+	
+	private static $_defaultModuleName = 'Frontend' ;
 	
 	private static $_alreadyInit = false;
 	private static $_instance = null;
@@ -111,12 +114,11 @@ final class Engine extends Application implements Throwable {
 		
 		$this->di->set ( Service::VIEW, function () use($dirs,$theme) {
 			
-			//$theme = 'javj/' ;
-			
 			$view = new \Phalcon\Mvc\View ();
 			$view->setLayoutsDir ( '../../../'.$dirs->ui->themes . $theme );
 			$view->setPartialsDir( '../../../'.$dirs->ui->themes . $theme . 'partials/' );
 			$view->setTemplateAfter('main');
+			$view->hook = new Hook();
 			
 			//TODO manage themes
 			if(is_dir($dirs->ui->themes . $theme . 'assets/')){
@@ -225,14 +227,14 @@ final class Engine extends Application implements Throwable {
 		return $moduleName;
 	}
 	protected function _registerDefaultModule() {
-		$moduleName = $this->_registerModuleFromManifest ( 'Test' );
+		$moduleName = $this->_registerModuleFromManifest (self::$_defaultModuleName);
 		$this->setDefaultModule ( $moduleName );
 	}
 	protected function _registerModules() {
 		// dump('register modules...');
 		$dirs = $this->loader->getConfigDirs ( '../' );
 		foreach ( scandir ( $dirs->core->modules ) as $dir ) {
-			if ($dir != '.' && $dir != '..' && is_dir ( $dirs->core->modules . $dir ) && $dir != 'Test') {
+			if ($dir != '.' && $dir != '..' && is_dir ( $dirs->core->modules . $dir ) && $dir != self::$_defaultModuleName) {
 				$moduleName = $this->_registerModuleFromManifest ( $dir );
 				// dump($moduleName);
 			}

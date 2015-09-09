@@ -61,6 +61,18 @@ function rcopy($src,$dest,$cached = false){
 	}
 }
 
+function fileList($src){
+	if(!is_dir($src)) return false;
+	$list = array();
+	$i = new DirectoryIterator($src);
+	foreach($i as $f) {
+		if($f->isFile()) {
+			$list[] = $f->getFilename();
+		}
+	}
+	return $list ;
+}
+
 $dump = true ;
 function enableDump($value){
 	global $dump ;

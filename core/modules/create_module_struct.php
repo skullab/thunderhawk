@@ -3,9 +3,9 @@
 /* 									[CONFIGURATION]											  */
 
 $config = array(
-	'moduleDir'			=> 'Installer',
-	'namespace'			=> 'Thunderhawk\Modules\Installer',
-	'moduleName'		=> 'installer',
+	'moduleDir'			=> 'Frontend',
+	'namespace'			=> 'Thunderhawk\Modules\Frontend',
+	'moduleName'		=> 'frontend',
 	'info'				=> array(
 			'author'	=> 'Thunderhawk',
 			'description'	=> array(
@@ -20,9 +20,13 @@ $config = array(
 			'minor'		=> '1'
 	),
 	'template'			=> array(
-			'engine'	=> array(
+			'engine1'	=> array(
 					'name'		=> 'php',
 					'extension' => 'phtml'
+			),
+			'engine2'	=> array(
+					'name'		=> 'volt',
+					'extension' => 'volt'
 			)
 	),
 	

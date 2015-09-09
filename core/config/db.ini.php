@@ -4,7 +4,7 @@
 
 host		= localhost
 username	= root
-password	= root
+password	= 
  
 adapter		= Mysql
 ;adapter	= Sqlite

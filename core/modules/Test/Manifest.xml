@@ -28,8 +28,7 @@
 	</template>
 	
 	<routing>
-		<route name="defaultModule:index" http-methods="GET"></route>
-		<route controller="1">:controller</route>
+		<route>test</route>
 		<route name="defaultModule:users" http-methods="GET,POST" action="users">
 			users/{method}
 		</route>

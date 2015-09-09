@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+	<namespace>Thunderhawk\Modules\Frontend</namespace>
+	<name>frontend</name>
+				
+	<info>
+		<author>Thunderhawk</author>
+		<description>
+			<long>
+			</long>
+			<short></short>
+		</description>
+	</info>
+
+	<version>
+		<release>0</release>
+		<major>0</major>
+		<minor>1</minor>
+	</version>
+
+	<template>
+		<engine extension="phtml">php</engine>
+		<engine extension="volt">volt</engine>
+	</template>
+				
+	<routing>
+		<route></route>
+	</routing>
+	
+	<required>
+		
+	</required>
+				
+	<permissions>
+		<group>Service::GROUP_BASE</group>
+		<permission>Service::VOLT</permission>
+		<permission>Service::FLASH</permission>
+		<permission>Service::DB</permission>
+	</permissions>
+</Module>
