@@ -23,7 +23,15 @@ if(!function_exists('boolval')) {
         return $BOOL ? true : false;
     }
 }
-
+function unlinkDifferent($dir,array $compare){
+	if(!is_dir($dir)) return false;
+	$i = new DirectoryIterator($dir);
+	foreach ($i as $f){
+		if($f->isFile() && !in_array($f->getFilename(), $compare)) {
+			unlink($f->getPathname());
+		}
+	}
+}
 function rcopy($src,$dest,$cached = false){
 	
 	/*var_dump($src);

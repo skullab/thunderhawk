@@ -1,17 +1,17 @@
  <div class="ui stackable grid">
 	<div class="row">
 		<div class="black sixteen wide column centered">
-			<h1 class="header">Hello Thunderhawk !</h1>
+			<?php $this->partial('header');?>
 		</div>
 	</div>
 	<div class="row">
 		<div class="twelve wide column centered">
-			<?php echo $this->getContent() ;?>
+			<?php $this->partial('content');?>
 		</div>
 	</div>
 	<div class="row">
 		<div class="black sixteen wide column centered">
-			<h1 class="header">footer</h1>
+			<?php $this->partial('footer');?>
 		</div>
 	</div>
 </div>

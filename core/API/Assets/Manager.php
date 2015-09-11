@@ -212,24 +212,27 @@ class Manager extends \Phalcon\Assets\Manager{
 	// PATHS
 	/*************************************************************************/
 	
-	public function getPath($directory){
-		//return $this->siteBaseUri.$this->assetsUri.$directory.'/' ;
-		return $this->assetsUri.$directory.'/' ;
+	public function getPath($directory,$absolute = false){
+		$path = $absolute ? $this->siteBaseUri : '' ;
+		$path .= $this->assetsUri.$directory.'/' ;
+		return $path ;
 	}
 	
-	public function getPathLib($resource){
-		return $this->libUri.$resource  ;
+	public function getPathLib($resource,$absolute = false){
+		$path = $absolute ? $this->siteBaseUri : '' ;
+		$path .= $this->libUri.$resource ;
+		return $path ;
 	}
 	
-	public function getPathModules($moduleName,$resource = ''){
-		return $this->getPath('modules').$moduleName.'/'.$resource ;
+	public function getPathModules($moduleName,$resource = '',$absolute = false){
+		return $this->getPath('modules',$absolute).$moduleName.'/'.$resource ;
 	}
 	
-	public function getPathTheme($resource){
-		return $this->getPath('themes/'.Service::get(Service::THEME_NAME)).$resource ;
+	public function getPathTheme($resource,$absolute = false){
+		return $this->getPath('themes/'.Service::get(Service::THEME_NAME),$absolute).$resource ;
 	}
 	
-	public function getPathUploads($date,$resource = '',$dateIsDirectory = false){
+	public function getPathUploads($date,$resource = '',$dateIsDirectory = false,$absolute = false){
 		if(!$dateIsDirectory){
 			try {
 				$date = new \DateTime($date);
@@ -240,7 +243,7 @@ class Manager extends \Phalcon\Assets\Manager{
 		}else{
 			$dir = $date ;
 		}
-		return $this->getPath('uploads').$dir.'/'.$resource ;
+		return $this->getPath('uploads',$absolute).$dir.'/'.$resource ;
 	}
 	
 	/*************************************************************************/

@@ -296,7 +296,7 @@ final class Engine extends Application implements Throwable {
 	
 	public function getBaseUri(){
 		$dirs = $this->loader->getConfigDirs ( '../' );
-		return str_replace('/','',$dirs['base']->uri) ;
+		return str_replace('/','',$dirs['base']->uri).'/' ;
 	}
 	
 	public function getConfigDirs($basePath = null){
